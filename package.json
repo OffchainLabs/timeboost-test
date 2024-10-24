@@ -1,0 +1,36 @@
+{
+  "name": "test-timeboost",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "TucksonDev <tucksondev@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@offchainlabs/eslint-config-typescript": "^0.2.2",
+    "@offchainlabs/prettier-config": "^0.2.1",
+    "@types/node": "^22.7.6",
+    "@types/yargs": "^17.0.33",
+    "@typescript-eslint/eslint-plugin": "^8.10.0",
+    "@typescript-eslint/parser": "^8.10.0",
+    "eslint": "^9.12.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3"
+  },
+  "dependencies": {
+    "@zerodev/ecdsa-validator": "^5.3.3",
+    "@zerodev/permissions": "^5.4.10",
+    "@zerodev/sdk": "^5.3.22",
+    "dotenv": "^16.4.5",
+    "permissionless": "^0.2.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
+    "viem": "^2.21.29",
+    "yargs": "^17.7.2"
+  },
+  "scripts": {
+    "bidOnAuction": "ts-node src/index.ts",
+    "sendELTransactions": "scripts/sendELTxs.sh",
+    "prettier:check": "prettier --check '**/*.{ts,md,json,yml}'",
+    "prettier:format": "prettier --write '**/*.{ts,md,json,yml}'"
+  }
+}
