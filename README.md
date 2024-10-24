@@ -37,3 +37,9 @@ yarn bidOnAuction
 ```
 yarn sendELTransactions <roundNumber>
 ```
+
+7. To withdraw the deposited funds (optional)
+
+```
+yarn withdrawFunds
+```
