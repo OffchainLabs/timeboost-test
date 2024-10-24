@@ -30,6 +30,7 @@
   "scripts": {
     "bidOnAuction": "ts-node src/index.ts",
     "sendELTransactions": "scripts/sendELTxs.sh",
+    "withdrawFunds": "ts-node src/withdrawFunds.ts",
     "prettier:check": "prettier --check '**/*.{ts,md,json,yml}'",
     "prettier:format": "prettier --write '**/*.{ts,md,json,yml}'"
   }
