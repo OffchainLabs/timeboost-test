@@ -7,7 +7,7 @@ These scripts are meant to test how Timeboost works, and how to use it, in a loc
 1. Clone repository
 
 ```
-git clone ...
+git clone https://github.com/OffchainLabs/timeboost-test.git
 ```
 
 2. Install dependencies
