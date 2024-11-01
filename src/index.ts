@@ -18,6 +18,34 @@ import { auctionContractAbi } from './auctionContractAbi';
 import dotenv from 'dotenv';
 dotenv.config();
 
+// env variables check
+if (
+  !process.env.PRIVATE_KEY ||
+  !process.env.CONTENDER_PRIVATE_KEY ||
+  !process.env.RPC ||
+  !process.env.CHAIN_ID ||
+  !process.env.SEQUENCER_ENDPOINT ||
+  !process.env.TB_AUCTION_CONTRACT_ADDRESS ||
+  !process.env.TB_BID_VALIDATOR_ENDPOINT ||
+  !process.env.AUCTION_STARTS_AT_SECONDS_IN_MINUTE ||
+  !process.env.AUCTION_ENDS_AT_SECONDS_IN_MINUTE
+) {
+  throw new Error(
+    'Missing one or more env variables: PRIVATE_KEY, CONTENDER_PRIVATE_KEY, RPC, CHAIN_ID, SEQUENCER_ENDPOINT, TB_AUCTION_CONTRACT_ADDRESS, TB_BID_VALIDATOR_ENDPOINT, AUCTION_STARTS_AT_SECONDS_IN_MINUTE, AUCTION_ENDS_AT_SECONDS_IN_MINUTE',
+  );
+}
+
+// Global variables/constants
+const auctionContract = process.env.TB_AUCTION_CONTRACT_ADDRESS as Address;
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
+const contenderAccount = privateKeyToAccount(process.env.CONTENDER_PRIVATE_KEY as `0x${string}`);
+const networkId = Number(process.env.CHAIN_ID);
+const roundAuctionStartsAtSecondsInMinute = Number(process.env.AUCTION_STARTS_AT_SECONDS_IN_MINUTE);
+const roundAuctionEndsAtSecondsInMinute = Number(process.env.AUCTION_ENDS_AT_SECONDS_IN_MINUTE);
+const bidAmount = 20n;
+const contenderBidAmount = 10n;
+const bypassSendTransactionToTriggerNewBlock = false;
+
 // Helpers
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const waitUntilSecondsInMinute = (seconds: number) =>
@@ -38,20 +66,11 @@ const logTitle = (text: string) => {
   console.log('**************************');
 };
 
-// Constants (move to environment variables, or get from RPC)
-const networkId = 412346;
-const networkName = 'LocalL2';
-const networkLabel = 'local-l2';
-const roundAuctionStartsAtSecondsInMinute = 10;
-const roundAuctionEndsAtSecondsInMinute = 50;
-const bidAmount = 20n;
-const contenderBidAmount = 10n;
-
 const getLocalNodeChainInformation = () => {
   return defineChain({
     id: networkId,
-    name: networkName,
-    network: networkLabel,
+    name: 'Orbit chain',
+    network: 'orbit-chain',
     nativeCurrency: {
       name: 'ETH',
       symbol: 'ETH',
@@ -68,6 +87,41 @@ const getLocalNodeChainInformation = () => {
   });
 };
 
+// Instantiating clients
+const publicClient = createPublicClient({
+  chain: getLocalNodeChainInformation(),
+  transport: http(process.env.RPC!),
+});
+const walletClient = createWalletClient({
+  chain: getLocalNodeChainInformation(),
+  transport: http(process.env.RPC!),
+});
+
+// Temporary function until resolving some bugs
+const sendTransactionToTriggerNewBlock = async (
+  verbose = false
+) => {
+  if (bypassSendTransactionToTriggerNewBlock) {
+    if (verbose) {
+      console.log(`Bypassing sending a new transaction to trigger a new block`);
+    }
+    return;
+  }
+
+  if (verbose) {
+    console.log(`Sending new transaction to trigger a new block...`);
+  }
+  const hash = await walletClient.sendTransaction({
+    account,
+    to: zeroAddress,
+    value: 1n,
+  });
+  if (verbose) {
+    console.log(`Transaction sent: ${hash}`);
+  }
+}
+
+// Checks deposted funds in the auction contract and deposits more funds if needed
 const checkDepositedFundsInAuctionContract = async (
   biddingTokenContract: Address,
   account: PrivateKeyAccount,
@@ -125,6 +179,7 @@ const checkDepositedFundsInAuctionContract = async (
   }
 };
 
+// Sends a bid to the bid validator endpoint
 const sendBid = async (
   account: PrivateKeyAccount,
   currentAuctionRound: bigint,
@@ -198,13 +253,22 @@ const sendBid = async (
   }
 };
 
+// Sends a transaction to the express lane
 const sendExpressLaneTransaction = async (
   account: PrivateKeyAccount,
+  transactionSigner: PrivateKeyAccount,
   currentRound: bigint,
   sequenceNumber: number,
 ) => {
   console.log('');
   console.log('Sending a transaction through the express lane');
+
+  // Get the current nonce of the account
+  // (since we'll be sending transactions directly to the sequencer endpoint
+  // and viem doesn't handle the nonce very well in those cases)
+  const currentNonce = await publicClient.getTransactionCount({  
+    address: account.address,
+  });
 
   const chainId = Number(publicClient.chain.id);
   const hexChainId: `0x${string}` = `0x${chainId.toString(16)}`;
@@ -212,15 +276,16 @@ const sendExpressLaneTransaction = async (
     account,
     to: '0x0000000000000000000000000000000000000001',
     value: 1n,
+    nonce: currentNonce,
   });
   const serializedTransaction = await walletClient.signTransaction(transaction);
 
   const signatureData = concat([
     keccak256(toHex('TIMEBOOST_BID')),
     pad(hexChainId),
-    toHex(numberToBytes(sequenceNumber, { size: 8 })),
     auctionContract,
     toHex(numberToBytes(currentRound, { size: 8 })),
+    toHex(numberToBytes(sequenceNumber, { size: 8 })),
     serializedTransaction,
   ]);
   const signature = await account.signMessage({
@@ -233,14 +298,14 @@ const sendExpressLaneTransaction = async (
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         jsonrpc: '2.0',
-        id: 'express-lane-tx',
+        id: `express-lane-tx`,
         method: 'timeboost_sendExpressLaneTransaction',
         params: [
           {
             chainId: hexChainId,
             round: `0x${currentRound.toString(16)}`,
             auctionContractAddress: auctionContract,
-            sequence: `0x${sequenceNumber.toString(16)}`,
+            sequenceNumber: `0x${sequenceNumber.toString(16)}`,
             transaction: serializedTransaction,
             options: {},
             signature: signature,
@@ -274,13 +339,7 @@ const sendExpressLaneTransaction = async (
 const main = async () => {
   // Trigger one transaction to update latest block
   // (needed to get the right round information when no blocks are being created)
-  // console.log(`Sending new transaction to trigger a new block...`);
-  const hash = await walletClient.sendTransaction({
-    account,
-    to: zeroAddress,
-    value: 1n,
-  });
-  // console.log(`Transaction sent: ${hash}`);
+  await sendTransactionToTriggerNewBlock();
 
   // Read info from the auction contract
   logTitle('Get information from the Auction contract');
@@ -352,13 +411,7 @@ const main = async () => {
   await waitUntilSecondsInMinute(roundAuctionEndsAtSecondsInMinute);
 
   // Send another transaction to trigger the auctioneer sending the resolveAuction transaction to the contract
-  // console.log(`Sending new transaction to trigger a new block...`);
-  const hash2 = await walletClient.sendTransaction({
-    account,
-    to: zeroAddress,
-    value: 1n,
-  });
-  // console.log(`Transaction sent: ${hash2}`);
+  await sendTransactionToTriggerNewBlock();
 
   // Wait a few extra seconds for processing
   await sleep(1000 * 5);
@@ -389,9 +442,13 @@ const main = async () => {
   await waitUntilSecondsInMinute(roundAuctionStartsAtSecondsInMinute);
 
   // Sending a transaction through the express lane
-  /*
   logTitle('Sending a express lane transaction');
-  await sendExpressLaneTransaction(account, currentAuctionRound, 0);
+  await sendExpressLaneTransaction(account, account, currentAuctionRound, 0);
+
+  // Wait a few seconds
+  await sleep(1000 * 5);
+  await sendTransactionToTriggerNewBlock();
+  await sleep(1000 * 5);
 
   // Transfer rights to a different account
   logTitle('Transferring rights to a different account');
@@ -406,40 +463,22 @@ const main = async () => {
 
   // Try to send a new transaction through the express lane (it should fail)
   logTitle('Sending a new express lane transaction (it should fail)');
-  await sendExpressLaneTransaction(account, currentAuctionRound, 1);
+  await sendExpressLaneTransaction(account, account, currentAuctionRound, 1);
+
+  // Wait a few seconds
+  await sleep(1000 * 5);
+  await sendTransactionToTriggerNewBlock();
+  await sleep(1000 * 5);
 
   // Sending a new transaction as the new address
   logTitle('Sending a new express lane transaction as the new address (it should work)');
-  await sendExpressLaneTransaction(contenderAccount, currentAuctionRound, 2);
-  */
+  await sendExpressLaneTransaction(contenderAccount, contenderAccount, currentAuctionRound, 1);
+
+  // Wait a few seconds
+  await sleep(1000 * 5);
+  await sendTransactionToTriggerNewBlock();
+  await sleep(1000 * 5);
 };
-
-// Checks
-if (
-  !process.env.PRIVATE_KEY ||
-  !process.env.CONTENDER_PRIVATE_KEY ||
-  !process.env.RPC ||
-  !process.env.SEQUENCER_ENDPOINT ||
-  !process.env.TB_AUCTION_CONTRACT_ADDRESS ||
-  !process.env.TB_BID_VALIDATOR_ENDPOINT
-) {
-  throw new Error(
-    'Missing one or more env variables: PRIVATE_KEY, CONTENDER_PRIVATE_KEY, RPC, SEQUENCER_ENDPOINT, TB_AUCTION_CONTRACT_ADDRESS, TB_BID_VALIDATOR_ENDPOINT',
-  );
-}
-
-// Global variables/constants
-const auctionContract = process.env.TB_AUCTION_CONTRACT_ADDRESS as Address;
-const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
-const contenderAccount = privateKeyToAccount(process.env.CONTENDER_PRIVATE_KEY as `0x${string}`);
-const publicClient = createPublicClient({
-  chain: getLocalNodeChainInformation(),
-  transport: http(process.env.RPC!),
-});
-const walletClient = createWalletClient({
-  chain: getLocalNodeChainInformation(),
-  transport: http(process.env.RPC!),
-});
 
 // Main call
 main()

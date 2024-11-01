@@ -26,19 +26,23 @@ cp .env.example .env
 
 4. Run nitro-testnode with timeboost enabled
 
-5. Submit bids to win an auction
+5. Test the timeboost flow
 
 ```
-yarn bidOnAuction
+yarn testTimeboost
 ```
 
-6. Send transactions to the express lane
+NOTE: this script submit bids and sends a few transactions to the express lane to test the different timeboost flows
+
+## Extra scripts
+
+There's a bash script available to send transactions to the express lane
 
 ```
 yarn sendELTransactions <roundNumber>
 ```
 
-7. To withdraw the deposited funds (optional)
+To withdraw the deposited funds
 
 ```
 yarn withdrawFunds

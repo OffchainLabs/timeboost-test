@@ -28,7 +28,7 @@
     "yargs": "^17.7.2"
   },
   "scripts": {
-    "bidOnAuction": "ts-node src/index.ts",
+    "testTimeboost": "ts-node src/index.ts",
     "sendELTransactions": "scripts/sendELTxs.sh",
     "withdrawFunds": "ts-node src/withdrawFunds.ts",
     "prettier:check": "prettier --check '**/*.{ts,md,json,yml}'",
