@@ -1,1239 +1,1115 @@
 export const auctionContractAbi = [
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'bool',
-        name: 'isMultiBidAuction',
-        type: 'bool',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'round',
-        type: 'uint64',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'firstPriceBidder',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'firstPriceExpressLaneController',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'firstPriceAmount',
-        type: 'uint256',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'price',
-        type: 'uint256',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'roundStartTimestamp',
-        type: 'uint64',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'roundEndTimestamp',
-        type: 'uint64',
-      },
-    ],
-    name: 'AuctionResolved',
-    type: 'event',
+    type: 'function',
+    name: 'AUCTIONEER_ADMIN_ROLE',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'amount',
-        type: 'uint256',
-      },
-    ],
-    name: 'Deposit',
-    type: 'event',
+    type: 'function',
+    name: 'AUCTIONEER_ROLE',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-      {
-        indexed: true,
-        internalType: 'bytes32',
-        name: 'previousAdminRole',
-        type: 'bytes32',
-      },
-      {
-        indexed: true,
-        internalType: 'bytes32',
-        name: 'newAdminRole',
-        type: 'bytes32',
-      },
-    ],
-    name: 'RoleAdminChanged',
-    type: 'event',
+    type: 'function',
+    name: 'BENEFICIARY_SETTER_ROLE',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'sender',
-        type: 'address',
-      },
-    ],
-    name: 'RoleGranted',
-    type: 'event',
+    type: 'function',
+    name: 'DEFAULT_ADMIN_ROLE',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'sender',
-        type: 'address',
-      },
-    ],
-    name: 'RoleRevoked',
-    type: 'event',
+    type: 'function',
+    name: 'MIN_RESERVE_SETTER_ROLE',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: 'address',
-        name: 'oldBeneficiary',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        internalType: 'address',
-        name: 'newBeneficiary',
-        type: 'address',
-      },
-    ],
-    name: 'SetBeneficiary',
-    type: 'event',
+    type: 'function',
+    name: 'RESERVE_SETTER_ADMIN_ROLE',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'round',
-        type: 'uint64',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'previousExpressLaneController',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'newExpressLaneController',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'transferor',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'startTimestamp',
-        type: 'uint64',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'endTimestamp',
-        type: 'uint64',
-      },
-    ],
-    name: 'SetExpressLaneController',
-    type: 'event',
+    type: 'function',
+    name: 'RESERVE_SETTER_ROLE',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'oldPrice',
-        type: 'uint256',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'newPrice',
-        type: 'uint256',
-      },
-    ],
-    name: 'SetMinReservePrice',
-    type: 'event',
+    type: 'function',
+    name: 'ROUND_TIMING_SETTER_ROLE',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'oldReservePrice',
-        type: 'uint256',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'newReservePrice',
-        type: 'uint256',
-      },
-    ],
-    name: 'SetReservePrice',
-    type: 'event',
+    type: 'function',
+    name: 'balanceOf',
+    inputs: [{ name: 'account', type: 'address', internalType: 'address' }],
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
+    type: 'function',
+    name: 'balanceOfAtRound',
     inputs: [
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'currentRound',
-        type: 'uint64',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'offsetTimestamp',
-        type: 'uint64',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'roundDurationSeconds',
-        type: 'uint64',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'auctionClosingSeconds',
-        type: 'uint64',
-      },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'reserveSubmissionSeconds',
-        type: 'uint64',
-      },
+      { name: 'account', type: 'address', internalType: 'address' },
+      { name: 'round', type: 'uint64', internalType: 'uint64' },
     ],
-    name: 'SetRoundTimingInfo',
-    type: 'event',
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    stateMutability: 'view',
   },
   {
-    anonymous: false,
+    type: 'function',
+    name: 'beneficiary',
+    inputs: [],
+    outputs: [{ name: '', type: 'address', internalType: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'beneficiaryBalance',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'biddingToken',
+    inputs: [],
+    outputs: [{ name: '', type: 'address', internalType: 'contract IERC20' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'currentRound',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint64', internalType: 'uint64' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'deposit',
+    inputs: [{ name: 'amount', type: 'uint256', internalType: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'domainSeparator',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'finalizeWithdrawal',
+    inputs: [],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'flushBeneficiaryBalance',
+    inputs: [],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'getBidHash',
     inputs: [
+      { name: 'round', type: 'uint64', internalType: 'uint64' },
       {
-        indexed: true,
-        internalType: 'address',
         name: 'expressLaneController',
         type: 'address',
-      },
-      {
-        indexed: true,
         internalType: 'address',
-        name: 'transferor',
-        type: 'address',
       },
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'fixedUntilRound',
-        type: 'uint64',
-      },
+      { name: 'amount', type: 'uint256', internalType: 'uint256' },
     ],
-    name: 'SetTransferor',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'withdrawalAmount',
-        type: 'uint256',
-      },
-    ],
-    name: 'WithdrawalFinalized',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'withdrawalAmount',
-        type: 'uint256',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'roundWithdrawable',
-        type: 'uint256',
-      },
-    ],
-    name: 'WithdrawalInitiated',
-    type: 'event',
-  },
-  {
-    inputs: [],
-    name: 'AUCTIONEER_ADMIN_ROLE',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'AUCTIONEER_ROLE',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'BENEFICIARY_SETTER_ROLE',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'BID_DOMAIN',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'MIN_RESERVE_SETTER_ROLE',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'RESERVE_SETTER_ADMIN_ROLE',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'RESERVE_SETTER_ROLE',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'ROUND_TIMING_SETTER_ROLE',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
-    name: 'balanceOf',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
     stateMutability: 'view',
-    type: 'function',
   },
   {
-    inputs: [],
-    name: 'beneficiary',
-    outputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'view',
     type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'beneficiaryBalance',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'biddingToken',
-    outputs: [
-      {
-        internalType: 'contract IERC20',
-        name: '',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'currentRound',
-    outputs: [
-      {
-        internalType: 'uint64',
-        name: '',
-        type: 'uint64',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'amount',
-        type: 'uint256',
-      },
-    ],
-    name: 'deposit',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'finalizeWithdrawal',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'flushBeneficiaryBalance',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint64',
-        name: '_round',
-        type: 'uint64',
-      },
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
-      },
-      {
-        internalType: 'address',
-        name: '_expressLaneController',
-        type: 'address',
-      },
-    ],
-    name: 'getBidBytes',
-    outputs: [
-      {
-        internalType: 'bytes',
-        name: '',
-        type: 'bytes',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-    ],
     name: 'getRoleAdmin',
-    outputs: [
-      {
-        internalType: 'bytes32',
-        name: '',
-        type: 'bytes32',
-      },
-    ],
+    inputs: [{ name: 'role', type: 'bytes32', internalType: 'bytes32' }],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
     stateMutability: 'view',
-    type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-      {
-        internalType: 'uint256',
-        name: 'index',
-        type: 'uint256',
-      },
-    ],
+    type: 'function',
     name: 'getRoleMember',
-    outputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
+    inputs: [
+      { name: 'role', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'index', type: 'uint256', internalType: 'uint256' },
     ],
+    outputs: [{ name: '', type: 'address', internalType: 'address' }],
     stateMutability: 'view',
-    type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-    ],
+    type: 'function',
     name: 'getRoleMemberCount',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
+    inputs: [{ name: 'role', type: 'bytes32', internalType: 'bytes32' }],
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
     stateMutability: 'view',
-    type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-      {
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
+    type: 'function',
     name: 'grantRole',
+    inputs: [
+      { name: 'role', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'account', type: 'address', internalType: 'address' },
+    ],
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-      {
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
+    type: 'function',
     name: 'hasRole',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
+    inputs: [
+      { name: 'role', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'account', type: 'address', internalType: 'address' },
     ],
+    outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
     stateMutability: 'view',
-    type: 'function',
   },
   {
+    type: 'function',
+    name: 'initialize',
     inputs: [
       {
-        components: [
-          {
-            internalType: 'address',
-            name: '_auctioneer',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: '_biddingToken',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: '_beneficiary',
-            type: 'address',
-          },
-          {
-            components: [
-              {
-                internalType: 'uint64',
-                name: 'offsetTimestamp',
-                type: 'uint64',
-              },
-              {
-                internalType: 'uint64',
-                name: 'roundDurationSeconds',
-                type: 'uint64',
-              },
-              {
-                internalType: 'uint64',
-                name: 'auctionClosingSeconds',
-                type: 'uint64',
-              },
-              {
-                internalType: 'uint64',
-                name: 'reserveSubmissionSeconds',
-                type: 'uint64',
-              },
-            ],
-            internalType: 'struct RoundTimingInfo',
-            name: '_roundTimingInfo',
-            type: 'tuple',
-          },
-          {
-            internalType: 'uint256',
-            name: '_minReservePrice',
-            type: 'uint256',
-          },
-          {
-            internalType: 'address',
-            name: '_auctioneerAdmin',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: '_minReservePriceSetter',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: '_reservePriceSetter',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: '_reservePriceSetterAdmin',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: '_beneficiarySetter',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: '_roundTimingSetter',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: '_masterAdmin',
-            type: 'address',
-          },
-        ],
-        internalType: 'struct InitArgs',
         name: 'args',
         type: 'tuple',
-      },
-    ],
-    name: 'initialize',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'initiateWithdrawal',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'isAuctionRoundClosed',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'isReserveBlackout',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'minReservePrice',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-      {
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
-    name: 'renounceRole',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'reservePrice',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
+        internalType: 'struct InitArgs',
         components: [
           {
-            internalType: 'address',
-            name: 'expressLaneController',
+            name: '_auctioneer',
             type: 'address',
+            internalType: 'address',
           },
           {
-            internalType: 'uint256',
-            name: 'amount',
+            name: '_biddingToken',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: '_beneficiary',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: '_roundTimingInfo',
+            type: 'tuple',
+            internalType: 'struct RoundTimingInfo',
+            components: [
+              {
+                name: 'offsetTimestamp',
+                type: 'int64',
+                internalType: 'int64',
+              },
+              {
+                name: 'roundDurationSeconds',
+                type: 'uint64',
+                internalType: 'uint64',
+              },
+              {
+                name: 'auctionClosingSeconds',
+                type: 'uint64',
+                internalType: 'uint64',
+              },
+              {
+                name: 'reserveSubmissionSeconds',
+                type: 'uint64',
+                internalType: 'uint64',
+              },
+            ],
+          },
+          {
+            name: '_minReservePrice',
             type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            internalType: 'bytes',
-            name: 'signature',
-            type: 'bytes',
+            name: '_auctioneerAdmin',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: '_minReservePriceSetter',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: '_reservePriceSetter',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: '_reservePriceSetterAdmin',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: '_beneficiarySetter',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: '_roundTimingSetter',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: '_masterAdmin',
+            type: 'address',
+            internalType: 'address',
           },
         ],
-        internalType: 'struct Bid',
+      },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'initiateWithdrawal',
+    inputs: [],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'isAuctionRoundClosed',
+    inputs: [],
+    outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'isReserveBlackout',
+    inputs: [],
+    outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'minReservePrice',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'renounceRole',
+    inputs: [
+      { name: 'role', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'account', type: 'address', internalType: 'address' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'reservePrice',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'resolveMultiBidAuction',
+    inputs: [
+      {
         name: 'firstPriceBid',
         type: 'tuple',
-      },
-      {
+        internalType: 'struct Bid',
         components: [
           {
-            internalType: 'address',
             name: 'expressLaneController',
             type: 'address',
+            internalType: 'address',
           },
-          {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
-          },
-          {
-            internalType: 'bytes',
-            name: 'signature',
-            type: 'bytes',
-          },
+          { name: 'amount', type: 'uint256', internalType: 'uint256' },
+          { name: 'signature', type: 'bytes', internalType: 'bytes' },
         ],
-        internalType: 'struct Bid',
+      },
+      {
         name: 'secondPriceBid',
         type: 'tuple',
-      },
-    ],
-    name: 'resolveMultiBidAuction',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
+        internalType: 'struct Bid',
         components: [
           {
-            internalType: 'address',
             name: 'expressLaneController',
             type: 'address',
+            internalType: 'address',
           },
-          {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
-          },
-          {
-            internalType: 'bytes',
-            name: 'signature',
-            type: 'bytes',
-          },
+          { name: 'amount', type: 'uint256', internalType: 'uint256' },
+          { name: 'signature', type: 'bytes', internalType: 'bytes' },
         ],
-        internalType: 'struct Bid',
+      },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'resolveSingleBidAuction',
+    inputs: [
+      {
         name: 'firstPriceBid',
         type: 'tuple',
+        internalType: 'struct Bid',
+        components: [
+          {
+            name: 'expressLaneController',
+            type: 'address',
+            internalType: 'address',
+          },
+          { name: 'amount', type: 'uint256', internalType: 'uint256' },
+          { name: 'signature', type: 'bytes', internalType: 'bytes' },
+        ],
       },
     ],
-    name: 'resolveSingleBidAuction',
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
-    inputs: [],
+    type: 'function',
     name: 'resolvedRounds',
+    inputs: [],
     outputs: [
       {
-        components: [
-          {
-            internalType: 'address',
-            name: 'expressLaneController',
-            type: 'address',
-          },
-          {
-            internalType: 'uint64',
-            name: 'round',
-            type: 'uint64',
-          },
-        ],
-        internalType: 'struct ELCRound',
         name: '',
         type: 'tuple',
+        internalType: 'struct ELCRound',
+        components: [
+          {
+            name: 'expressLaneController',
+            type: 'address',
+            internalType: 'address',
+          },
+          { name: 'round', type: 'uint64', internalType: 'uint64' },
+        ],
       },
       {
-        components: [
-          {
-            internalType: 'address',
-            name: 'expressLaneController',
-            type: 'address',
-          },
-          {
-            internalType: 'uint64',
-            name: 'round',
-            type: 'uint64',
-          },
-        ],
-        internalType: 'struct ELCRound',
         name: '',
         type: 'tuple',
+        internalType: 'struct ELCRound',
+        components: [
+          {
+            name: 'expressLaneController',
+            type: 'address',
+            internalType: 'address',
+          },
+          { name: 'round', type: 'uint64', internalType: 'uint64' },
+        ],
       },
     ],
     stateMutability: 'view',
-    type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'bytes32',
-        name: 'role',
-        type: 'bytes32',
-      },
-      {
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
+    type: 'function',
     name: 'revokeRole',
+    inputs: [
+      { name: 'role', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'account', type: 'address', internalType: 'address' },
+    ],
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'uint64',
-        name: 'round',
-        type: 'uint64',
-      },
-    ],
+    type: 'function',
     name: 'roundTimestamps',
+    inputs: [{ name: 'round', type: 'uint64', internalType: 'uint64' }],
     outputs: [
-      {
-        internalType: 'uint64',
-        name: 'start',
-        type: 'uint64',
-      },
-      {
-        internalType: 'uint64',
-        name: 'end',
-        type: 'uint64',
-      },
+      { name: '', type: 'uint64', internalType: 'uint64' },
+      { name: '', type: 'uint64', internalType: 'uint64' },
     ],
     stateMutability: 'view',
-    type: 'function',
   },
   {
-    inputs: [],
+    type: 'function',
     name: 'roundTimingInfo',
+    inputs: [],
     outputs: [
+      { name: 'offsetTimestamp', type: 'int64', internalType: 'int64' },
       {
-        internalType: 'uint64',
-        name: 'offsetTimestamp',
-        type: 'uint64',
-      },
-      {
-        internalType: 'uint64',
         name: 'roundDurationSeconds',
         type: 'uint64',
+        internalType: 'uint64',
       },
       {
-        internalType: 'uint64',
         name: 'auctionClosingSeconds',
         type: 'uint64',
+        internalType: 'uint64',
       },
       {
-        internalType: 'uint64',
         name: 'reserveSubmissionSeconds',
         type: 'uint64',
+        internalType: 'uint64',
       },
     ],
     stateMutability: 'view',
-    type: 'function',
   },
   {
+    type: 'function',
+    name: 'setBeneficiary',
     inputs: [
       {
-        internalType: 'address',
         name: 'newBeneficiary',
         type: 'address',
+        internalType: 'address',
       },
     ],
-    name: 'setBeneficiary',
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
+    type: 'function',
+    name: 'setMinReservePrice',
     inputs: [
       {
-        internalType: 'uint256',
         name: 'newMinReservePrice',
         type: 'uint256',
+        internalType: 'uint256',
       },
     ],
-    name: 'setMinReservePrice',
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
+    type: 'function',
+    name: 'setReservePrice',
     inputs: [
       {
-        internalType: 'uint256',
         name: 'newReservePrice',
         type: 'uint256',
+        internalType: 'uint256',
       },
     ],
-    name: 'setReservePrice',
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
+    type: 'function',
+    name: 'setRoundTimingInfo',
     inputs: [
       {
-        components: [
-          {
-            internalType: 'uint64',
-            name: 'offsetTimestamp',
-            type: 'uint64',
-          },
-          {
-            internalType: 'uint64',
-            name: 'roundDurationSeconds',
-            type: 'uint64',
-          },
-          {
-            internalType: 'uint64',
-            name: 'auctionClosingSeconds',
-            type: 'uint64',
-          },
-          {
-            internalType: 'uint64',
-            name: 'reserveSubmissionSeconds',
-            type: 'uint64',
-          },
-        ],
-        internalType: 'struct RoundTimingInfo',
         name: 'newRoundTimingInfo',
         type: 'tuple',
-      },
-    ],
-    name: 'setRoundTimingInfo',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
+        internalType: 'struct RoundTimingInfo',
         components: [
           {
-            internalType: 'address',
-            name: 'addr',
-            type: 'address',
+            name: 'offsetTimestamp',
+            type: 'int64',
+            internalType: 'int64',
           },
           {
-            internalType: 'uint64',
-            name: 'fixedUntilRound',
+            name: 'roundDurationSeconds',
             type: 'uint64',
+            internalType: 'uint64',
+          },
+          {
+            name: 'auctionClosingSeconds',
+            type: 'uint64',
+            internalType: 'uint64',
+          },
+          {
+            name: 'reserveSubmissionSeconds',
+            type: 'uint64',
+            internalType: 'uint64',
           },
         ],
-        internalType: 'struct Transferor',
+      },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'setTransferor',
+    inputs: [
+      {
         name: 'transferor',
         type: 'tuple',
+        internalType: 'struct Transferor',
+        components: [
+          { name: 'addr', type: 'address', internalType: 'address' },
+          {
+            name: 'fixedUntilRound',
+            type: 'uint64',
+            internalType: 'uint64',
+          },
+        ],
       },
     ],
-    name: 'setTransferor',
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'bytes4',
-        name: 'interfaceId',
-        type: 'bytes4',
-      },
-    ],
+    type: 'function',
     name: 'supportsInterface',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
+    inputs: [{ name: 'interfaceId', type: 'bytes4', internalType: 'bytes4' }],
+    outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
     stateMutability: 'view',
-    type: 'function',
   },
   {
+    type: 'function',
+    name: 'transferExpressLaneController',
     inputs: [
+      { name: 'round', type: 'uint64', internalType: 'uint64' },
       {
-        internalType: 'uint64',
-        name: 'round',
-        type: 'uint64',
-      },
-      {
-        internalType: 'address',
         name: 'newExpressLaneController',
         type: 'address',
+        internalType: 'address',
       },
     ],
-    name: 'transferExpressLaneController',
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'expressLaneController',
-        type: 'address',
-      },
-    ],
+    type: 'function',
     name: 'transferorOf',
+    inputs: [{ name: '', type: 'address', internalType: 'address' }],
     outputs: [
+      { name: 'addr', type: 'address', internalType: 'address' },
       {
-        internalType: 'address',
-        name: 'addr',
-        type: 'address',
-      },
-      {
-        internalType: 'uint64',
-        name: 'fixedUntil',
+        name: 'fixedUntilRound',
         type: 'uint64',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
-    name: 'withdrawableBalance',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
+        internalType: 'uint64',
       },
     ],
     stateMutability: 'view',
-    type: 'function',
   },
+  {
+    type: 'function',
+    name: 'withdrawableBalance',
+    inputs: [{ name: 'account', type: 'address', internalType: 'address' }],
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'withdrawableBalanceAtRound',
+    inputs: [
+      { name: 'account', type: 'address', internalType: 'address' },
+      { name: 'round', type: 'uint64', internalType: 'uint64' },
+    ],
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'event',
+    name: 'AuctionResolved',
+    inputs: [
+      {
+        name: 'isMultiBidAuction',
+        type: 'bool',
+        indexed: true,
+        internalType: 'bool',
+      },
+      {
+        name: 'round',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+      {
+        name: 'firstPriceBidder',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'firstPriceExpressLaneController',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'firstPriceAmount',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+      {
+        name: 'price',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+      {
+        name: 'roundStartTimestamp',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+      {
+        name: 'roundEndTimestamp',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'Deposit',
+    inputs: [
+      {
+        name: 'account',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'amount',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'RoleAdminChanged',
+    inputs: [
+      {
+        name: 'role',
+        type: 'bytes32',
+        indexed: true,
+        internalType: 'bytes32',
+      },
+      {
+        name: 'previousAdminRole',
+        type: 'bytes32',
+        indexed: true,
+        internalType: 'bytes32',
+      },
+      {
+        name: 'newAdminRole',
+        type: 'bytes32',
+        indexed: true,
+        internalType: 'bytes32',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'RoleGranted',
+    inputs: [
+      {
+        name: 'role',
+        type: 'bytes32',
+        indexed: true,
+        internalType: 'bytes32',
+      },
+      {
+        name: 'account',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'sender',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'RoleRevoked',
+    inputs: [
+      {
+        name: 'role',
+        type: 'bytes32',
+        indexed: true,
+        internalType: 'bytes32',
+      },
+      {
+        name: 'account',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'sender',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'SetBeneficiary',
+    inputs: [
+      {
+        name: 'oldBeneficiary',
+        type: 'address',
+        indexed: false,
+        internalType: 'address',
+      },
+      {
+        name: 'newBeneficiary',
+        type: 'address',
+        indexed: false,
+        internalType: 'address',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'SetExpressLaneController',
+    inputs: [
+      {
+        name: 'round',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+      {
+        name: 'previousExpressLaneController',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'newExpressLaneController',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'transferor',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'startTimestamp',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+      {
+        name: 'endTimestamp',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'SetMinReservePrice',
+    inputs: [
+      {
+        name: 'oldPrice',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+      {
+        name: 'newPrice',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'SetReservePrice',
+    inputs: [
+      {
+        name: 'oldReservePrice',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+      {
+        name: 'newReservePrice',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'SetRoundTimingInfo',
+    inputs: [
+      {
+        name: 'currentRound',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+      {
+        name: 'offsetTimestamp',
+        type: 'int64',
+        indexed: false,
+        internalType: 'int64',
+      },
+      {
+        name: 'roundDurationSeconds',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+      {
+        name: 'auctionClosingSeconds',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+      {
+        name: 'reserveSubmissionSeconds',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'SetTransferor',
+    inputs: [
+      {
+        name: 'expressLaneController',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'transferor',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'fixedUntilRound',
+        type: 'uint64',
+        indexed: false,
+        internalType: 'uint64',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'WithdrawalFinalized',
+    inputs: [
+      {
+        name: 'account',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'withdrawalAmount',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'WithdrawalInitiated',
+    inputs: [
+      {
+        name: 'account',
+        type: 'address',
+        indexed: true,
+        internalType: 'address',
+      },
+      {
+        name: 'withdrawalAmount',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+      {
+        name: 'roundWithdrawable',
+        type: 'uint256',
+        indexed: false,
+        internalType: 'uint256',
+      },
+    ],
+    anonymous: false,
+  },
+  { type: 'error', name: 'AuctionNotClosed', inputs: [] },
+  { type: 'error', name: 'BidsWrongOrder', inputs: [] },
+  {
+    type: 'error',
+    name: 'FixedTransferor',
+    inputs: [
+      {
+        name: 'fixedUntilRound',
+        type: 'uint64',
+        internalType: 'uint64',
+      },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'InsufficientBalance',
+    inputs: [
+      {
+        name: 'amountRequested',
+        type: 'uint256',
+        internalType: 'uint256',
+      },
+      { name: 'balance', type: 'uint256', internalType: 'uint256' },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'InsufficientBalanceAcc',
+    inputs: [
+      { name: 'account', type: 'address', internalType: 'address' },
+      {
+        name: 'amountRequested',
+        type: 'uint256',
+        internalType: 'uint256',
+      },
+      { name: 'balance', type: 'uint256', internalType: 'uint256' },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'InvalidNewRound',
+    inputs: [
+      { name: 'currentRound', type: 'uint64', internalType: 'uint64' },
+      { name: 'newRound', type: 'uint64', internalType: 'uint64' },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'InvalidNewStart',
+    inputs: [
+      { name: 'currentStart', type: 'uint64', internalType: 'uint64' },
+      { name: 'newStart', type: 'uint64', internalType: 'uint64' },
+    ],
+  },
+  { type: 'error', name: 'NegativeOffset', inputs: [] },
+  {
+    type: 'error',
+    name: 'NegativeRoundStart',
+    inputs: [{ name: 'roundStart', type: 'int64', internalType: 'int64' }],
+  },
+  {
+    type: 'error',
+    name: 'NotExpressLaneController',
+    inputs: [
+      { name: 'round', type: 'uint64', internalType: 'uint64' },
+      { name: 'controller', type: 'address', internalType: 'address' },
+      { name: 'sender', type: 'address', internalType: 'address' },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'NotTransferor',
+    inputs: [
+      { name: 'round', type: 'uint64', internalType: 'uint64' },
+      {
+        name: 'expectedTransferor',
+        type: 'address',
+        internalType: 'address',
+      },
+      { name: 'msgSender', type: 'address', internalType: 'address' },
+    ],
+  },
+  { type: 'error', name: 'NothingToWithdraw', inputs: [] },
+  { type: 'error', name: 'ReserveBlackout', inputs: [] },
+  {
+    type: 'error',
+    name: 'ReservePriceNotMet',
+    inputs: [
+      { name: 'bidAmount', type: 'uint256', internalType: 'uint256' },
+      { name: 'reservePrice', type: 'uint256', internalType: 'uint256' },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'ReservePriceTooLow',
+    inputs: [
+      {
+        name: 'reservePrice',
+        type: 'uint256',
+        internalType: 'uint256',
+      },
+      {
+        name: 'minReservePrice',
+        type: 'uint256',
+        internalType: 'uint256',
+      },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'RoundAlreadyResolved',
+    inputs: [{ name: 'round', type: 'uint64', internalType: 'uint64' }],
+  },
+  { type: 'error', name: 'RoundDurationTooShort', inputs: [] },
+  {
+    type: 'error',
+    name: 'RoundNotResolved',
+    inputs: [{ name: 'round', type: 'uint64', internalType: 'uint64' }],
+  },
+  {
+    type: 'error',
+    name: 'RoundTooLong',
+    inputs: [
+      {
+        name: 'roundDurationSeconds',
+        type: 'uint64',
+        internalType: 'uint64',
+      },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'RoundTooOld',
+    inputs: [
+      { name: 'round', type: 'uint64', internalType: 'uint64' },
+      { name: 'currentRound', type: 'uint64', internalType: 'uint64' },
+    ],
+  },
+  { type: 'error', name: 'SameBidder', inputs: [] },
+  { type: 'error', name: 'TieBidsWrongOrder', inputs: [] },
+  { type: 'error', name: 'WithdrawalInProgress', inputs: [] },
+  { type: 'error', name: 'WithdrawalMaxRound', inputs: [] },
+  { type: 'error', name: 'ZeroAmount', inputs: [] },
+  { type: 'error', name: 'ZeroAuctionClosingSeconds', inputs: [] },
+  { type: 'error', name: 'ZeroBiddingToken', inputs: [] },
 ] as const;

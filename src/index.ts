@@ -45,6 +45,7 @@ const roundAuctionEndsAtSecondsInMinute = Number(process.env.AUCTION_ENDS_AT_SEC
 const bidAmount = 20n;
 const contenderBidAmount = 10n;
 const bypassSendTransactionToTriggerNewBlock = false;
+const secondsToWaitInBetweenELTransactions = 2;
 
 // Helpers
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -193,21 +194,35 @@ const sendBid = async (
   const signatureData = await publicClient.readContract({
     address: auctionContract,
     abi: auctionContractAbi,
-    functionName: 'getBidBytes',
-    args: [currentAuctionRound, bidAmount, account.address],
+    functionName: 'getBidHash',
+    args: [currentAuctionRound, account.address, bidAmount],
   });
   /*
-  const signatureData = concat([
-    keccak256(toHex('TIMEBOOST_BID')),
-    pad(hexChainId),
-    auctionContract,
-    toHex(numberToBytes(currentAuctionRound, { size: 8 })),
-    toHex(numberToBytes(bidAmount, { size: 32 })),
-    account.address,
-  ]);
+  // Crafting the EIP-712 signature with viem
+  const signatureData = hashTypedData({
+    domain: {
+      name: "ExpressLaneAuction",
+      version: "1",
+      chainId: Number(publicClient.chain.id),
+      verifyingContract: auctionContract,
+    },
+    types: {
+      Bid: [
+        { name: 'round', type: 'uint64' },
+        { name: 'expressLaneController', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+      ]
+    },
+    primaryType: 'Bid',
+    message: {
+      round: currentAuctionRound,
+      expressLaneController: account.address,
+      amount: bidAmount,
+    }
+  });
   */
-  const signature = await account.signMessage({
-    message: { raw: signatureData },
+  const signature = await account.sign({
+    hash: signatureData
   });
 
   try {
@@ -267,13 +282,13 @@ const sendExpressLaneTransaction = async (
   // (since we'll be sending transactions directly to the sequencer endpoint
   // and viem doesn't handle the nonce very well in those cases)
   const currentNonce = await publicClient.getTransactionCount({  
-    address: account.address,
+    address: transactionSigner.address,
   });
 
   const chainId = Number(publicClient.chain.id);
   const hexChainId: `0x${string}` = `0x${chainId.toString(16)}`;
   const transaction = await walletClient.prepareTransactionRequest({
-    account,
+    account: transactionSigner,
     to: '0x0000000000000000000000000000000000000001',
     value: 1n,
     nonce: currentNonce,
@@ -414,7 +429,7 @@ const main = async () => {
   await sendTransactionToTriggerNewBlock();
 
   // Wait a few extra seconds for processing
-  await sleep(1000 * 5);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
 
   // Look for the latest SetExpressLaneController log
   logTitle('Getting the auction winner');
@@ -446,9 +461,18 @@ const main = async () => {
   await sendExpressLaneTransaction(account, account, currentAuctionRound, 0);
 
   // Wait a few seconds
-  await sleep(1000 * 5);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
   await sendTransactionToTriggerNewBlock();
-  await sleep(1000 * 5);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+
+  // Sending a transaction through the express lane
+  logTitle('Sending a express lane transaction signed by a different account');
+  await sendExpressLaneTransaction(account, contenderAccount, currentAuctionRound, 1);
+
+  // Wait a few seconds
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+  await sendTransactionToTriggerNewBlock();
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
 
   // Transfer rights to a different account
   logTitle('Transferring rights to a different account');
@@ -460,24 +484,34 @@ const main = async () => {
     args: [currentAuctionRound, contenderAccount.address],
   });
   console.log(`Transfer EL controller transaction hash: ${transferELC}`);
+  console.log(`The new EL controller should now be ${contenderAccount.address}`);
 
   // Try to send a new transaction through the express lane (it should fail)
-  logTitle('Sending a new express lane transaction (it should fail)');
-  await sendExpressLaneTransaction(account, account, currentAuctionRound, 1);
+  logTitle('Sending a new express lane transaction as the previous EL controller (it should fail)');
+  await sendExpressLaneTransaction(account, account, currentAuctionRound, 2);
 
   // Wait a few seconds
-  await sleep(1000 * 5);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
   await sendTransactionToTriggerNewBlock();
-  await sleep(1000 * 5);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
 
   // Sending a new transaction as the new address
   logTitle('Sending a new express lane transaction as the new address (it should work)');
-  await sendExpressLaneTransaction(contenderAccount, contenderAccount, currentAuctionRound, 1);
+  await sendExpressLaneTransaction(contenderAccount, contenderAccount, currentAuctionRound, 2);
 
   // Wait a few seconds
-  await sleep(1000 * 5);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
   await sendTransactionToTriggerNewBlock();
-  await sleep(1000 * 5);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+
+  // Sending a new transaction as the new address
+  logTitle('Sending a new express lane transaction signed by a different user');
+  await sendExpressLaneTransaction(contenderAccount, account, currentAuctionRound, 3);
+
+  // Wait a few seconds
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+  await sendTransactionToTriggerNewBlock();
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
 };
 
 // Main call
