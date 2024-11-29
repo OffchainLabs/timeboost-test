@@ -1,7 +1,6 @@
 import {
   Address,
   concat,
-  createPublicClient,
   createWalletClient,
   defineChain,
   http,
@@ -10,6 +9,7 @@ import {
   pad,
   parseAbi,
   PrivateKeyAccount,
+  publicActions,
   toHex,
   zeroAddress,
 } from 'viem';
@@ -37,8 +37,8 @@ if (
 
 // Global variables/constants
 const auctionContract = process.env.TB_AUCTION_CONTRACT_ADDRESS as Address;
-const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
-const contenderAccount = privateKeyToAccount(process.env.CONTENDER_PRIVATE_KEY as `0x${string}`);
+const alice = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
+const bob = privateKeyToAccount(process.env.CONTENDER_PRIVATE_KEY as `0x${string}`);
 const networkId = Number(process.env.CHAIN_ID);
 const roundAuctionStartsAtSecondsInMinute = Number(process.env.AUCTION_STARTS_AT_SECONDS_IN_MINUTE);
 const roundAuctionEndsAtSecondsInMinute = Number(process.env.AUCTION_ENDS_AT_SECONDS_IN_MINUTE);
@@ -88,20 +88,14 @@ const getLocalNodeChainInformation = () => {
   });
 };
 
-// Instantiating clients
-const publicClient = createPublicClient({
+// Instantiating client
+const client = createWalletClient({
   chain: getLocalNodeChainInformation(),
   transport: http(process.env.RPC!),
-});
-const walletClient = createWalletClient({
-  chain: getLocalNodeChainInformation(),
-  transport: http(process.env.RPC!),
-});
+}).extend(publicActions);
 
 // Temporary function until resolving some bugs
-const sendTransactionToTriggerNewBlock = async (
-  verbose = false
-) => {
+const sendTransactionToTriggerNewBlock = async (verbose = false) => {
   if (bypassSendTransactionToTriggerNewBlock) {
     if (verbose) {
       console.log(`Bypassing sending a new transaction to trigger a new block`);
@@ -112,15 +106,15 @@ const sendTransactionToTriggerNewBlock = async (
   if (verbose) {
     console.log(`Sending new transaction to trigger a new block...`);
   }
-  const hash = await walletClient.sendTransaction({
-    account,
+  const hash = await client.sendTransaction({
+    account: alice,
     to: zeroAddress,
     value: 1n,
   });
   if (verbose) {
     console.log(`Transaction sent: ${hash}`);
   }
-}
+};
 
 // Checks deposted funds in the auction contract and deposits more funds if needed
 const checkDepositedFundsInAuctionContract = async (
@@ -131,7 +125,7 @@ const checkDepositedFundsInAuctionContract = async (
   console.log('');
   console.log(`Checking deposited funds for ${account.address} to bid ${bidAmount}`);
 
-  const depositedBalance = await publicClient.readContract({
+  const depositedBalance = await client.readContract({
     address: auctionContract,
     abi: auctionContractAbi,
     functionName: 'balanceOf',
@@ -144,7 +138,7 @@ const checkDepositedFundsInAuctionContract = async (
     console.log(`User does not have enough funds to bid ${bidAmount}, making a new deposit...`);
 
     // Check balance of the user in the bidding token
-    const biddingTokenBalance = await publicClient.readContract({
+    const biddingTokenBalance = await client.readContract({
       address: biddingTokenContract,
       abi: parseAbi(['function balanceOf(address) public view returns (uint256)']),
       functionName: 'balanceOf',
@@ -159,7 +153,7 @@ const checkDepositedFundsInAuctionContract = async (
     }
 
     // Approving spending tokens
-    const approveHash = await walletClient.writeContract({
+    const approveHash = await client.writeContract({
       account,
       address: biddingTokenContract,
       abi: parseAbi(['function approve(address,uint256)']),
@@ -169,7 +163,7 @@ const checkDepositedFundsInAuctionContract = async (
     console.log(`Approve transaction sent: ${approveHash}`);
 
     // Making the deposit
-    const depositHash = await walletClient.writeContract({
+    const depositHash = await client.writeContract({
       account,
       address: auctionContract,
       abi: auctionContractAbi,
@@ -189,9 +183,9 @@ const sendBid = async (
   console.log('');
   console.log(`Sending bid of account ${account.address}: ${bidAmount}`);
 
-  const hexChainId: `0x${string}` = `0x${Number(publicClient.chain.id).toString(16)}`;
+  const hexChainId: `0x${string}` = `0x${Number(client.chain.id).toString(16)}`;
 
-  const signatureData = await publicClient.readContract({
+  const signatureData = await client.readContract({
     address: auctionContract,
     abi: auctionContractAbi,
     functionName: 'getBidHash',
@@ -203,7 +197,7 @@ const sendBid = async (
     domain: {
       name: "ExpressLaneAuction",
       version: "1",
-      chainId: Number(publicClient.chain.id),
+      chainId: Number(client.chain.id),
       verifyingContract: auctionContract,
     },
     types: {
@@ -222,7 +216,7 @@ const sendBid = async (
   });
   */
   const signature = await account.sign({
-    hash: signatureData
+    hash: signatureData,
   });
 
   try {
@@ -270,7 +264,7 @@ const sendBid = async (
 
 // Sends a transaction to the express lane
 const sendExpressLaneTransaction = async (
-  account: PrivateKeyAccount,
+  ELController: PrivateKeyAccount,
   transactionSigner: PrivateKeyAccount,
   currentRound: bigint,
   sequenceNumber: number,
@@ -278,22 +272,15 @@ const sendExpressLaneTransaction = async (
   console.log('');
   console.log('Sending a transaction through the express lane');
 
-  // Get the current nonce of the account
-  // (since we'll be sending transactions directly to the sequencer endpoint
-  // and viem doesn't handle the nonce very well in those cases)
-  const currentNonce = await publicClient.getTransactionCount({  
-    address: transactionSigner.address,
-  });
-
-  const chainId = Number(publicClient.chain.id);
+  const chainId = Number(client.chain.id);
   const hexChainId: `0x${string}` = `0x${chainId.toString(16)}`;
-  const transaction = await walletClient.prepareTransactionRequest({
-    account: transactionSigner,
+  const transaction = await client.prepareTransactionRequest({
+    account: transactionSigner.address,
     to: '0x0000000000000000000000000000000000000001',
     value: 1n,
-    nonce: currentNonce,
+    type: 'legacy',
   });
-  const serializedTransaction = await walletClient.signTransaction(transaction);
+  const serializedTransaction = await transactionSigner.signTransaction(transaction);
 
   const signatureData = concat([
     keccak256(toHex('TIMEBOOST_BID')),
@@ -303,7 +290,7 @@ const sendExpressLaneTransaction = async (
     toHex(numberToBytes(sequenceNumber, { size: 8 })),
     serializedTransaction,
   ]);
-  const signature = await account.signMessage({
+  const signature = await ELController.signMessage({
     message: { raw: signatureData },
   });
 
@@ -358,21 +345,21 @@ const main = async () => {
 
   // Read info from the auction contract
   logTitle('Get information from the Auction contract');
-  const reservePrice = await publicClient.readContract({
+  const reservePrice = await client.readContract({
     address: auctionContract,
     abi: auctionContractAbi,
     functionName: 'reservePrice',
   });
   console.log(`Current reservePrice: ${reservePrice}`);
 
-  const biddingTokenContract = await publicClient.readContract({
+  const biddingTokenContract = await client.readContract({
     address: auctionContract,
     abi: auctionContractAbi,
     functionName: 'biddingToken',
   });
   console.log(`Current biddingToken: ${biddingTokenContract}`);
 
-  const roundTimingInfo = await publicClient.readContract({
+  const roundTimingInfo = await client.readContract({
     address: auctionContract,
     abi: auctionContractAbi,
     functionName: 'roundTimingInfo',
@@ -381,22 +368,18 @@ const main = async () => {
 
   // Check balances
   logTitle('Depositing funds into the Auction contract');
-  await checkDepositedFundsInAuctionContract(biddingTokenContract, account, bidAmount);
-  await checkDepositedFundsInAuctionContract(
-    biddingTokenContract,
-    contenderAccount,
-    contenderBidAmount,
-  );
+  await checkDepositedFundsInAuctionContract(biddingTokenContract, alice, bidAmount);
+  await checkDepositedFundsInAuctionContract(biddingTokenContract, bob, contenderBidAmount);
 
   // Read current round
   logTitle('Getting information about the current auction round');
-  const currentRound = await publicClient.readContract({
+  const currentRound = await client.readContract({
     address: auctionContract,
     abi: auctionContractAbi,
     functionName: 'currentRound',
   });
   let currentAuctionRound = currentRound + 1n;
-  let currentAuctionRoundIsClosed = await publicClient.readContract({
+  let currentAuctionRoundIsClosed = await client.readContract({
     address: auctionContract,
     abi: auctionContractAbi,
     functionName: 'isAuctionRoundClosed',
@@ -414,11 +397,11 @@ const main = async () => {
 
   // Bidding with main account
   logTitle('Sending bids to the Auction contract');
-  await sendBid(account, currentAuctionRound, bidAmount);
-  await sendBid(contenderAccount, currentAuctionRound, contenderBidAmount);
+  await sendBid(alice, currentAuctionRound, bidAmount);
+  await sendBid(bob, currentAuctionRound, contenderBidAmount);
 
   // Get current block for the log query search later
-  const fromBlock = await publicClient.getBlockNumber();
+  const fromBlock = await client.getBlockNumber();
 
   // Wait for auction round to finish
   console.log('');
@@ -434,7 +417,7 @@ const main = async () => {
   // Look for the latest SetExpressLaneController log
   logTitle('Getting the auction winner');
   console.log(`Fetch the latest SetExpressLaneController log...`);
-  const logs = await publicClient.getLogs({
+  const logs = await client.getLogs({
     address: auctionContract,
     event: auctionContractAbi.filter((abiEntry) => abiEntry.name === 'SetExpressLaneController')[0],
     fromBlock,
@@ -442,9 +425,9 @@ const main = async () => {
 
   // Verify whether we are the current express lane controller
   console.log('');
-  const newExpressLaneController = logs[0].args.newExpressLaneController;
+  const newExpressLaneController = logs[logs.length - 1].args.newExpressLaneController;
   console.log(`New express lane controller: ${newExpressLaneController}`);
-  if (account.address === newExpressLaneController) {
+  if (alice.address === newExpressLaneController) {
     console.log(`Auction won. You are the new express lane controller!`);
   } else {
     console.log(`Auction lost. The new express lane controller is ${newExpressLaneController}`);
@@ -458,7 +441,7 @@ const main = async () => {
 
   // Sending a transaction through the express lane
   logTitle('Sending a express lane transaction');
-  await sendExpressLaneTransaction(account, account, currentAuctionRound, 0);
+  await sendExpressLaneTransaction(alice, alice, currentAuctionRound, 0);
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -467,7 +450,7 @@ const main = async () => {
 
   // Sending a transaction through the express lane
   logTitle('Sending a express lane transaction signed by a different account');
-  await sendExpressLaneTransaction(account, contenderAccount, currentAuctionRound, 1);
+  await sendExpressLaneTransaction(alice, bob, currentAuctionRound, 1);
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -476,19 +459,41 @@ const main = async () => {
 
   // Transfer rights to a different account
   logTitle('Transferring rights to a different account');
-  const transferELC = await walletClient.writeContract({
-    account,
+  const transferELC = await client.writeContract({
+    account: alice,
     address: auctionContract,
     abi: auctionContractAbi,
     functionName: 'transferExpressLaneController',
-    args: [currentAuctionRound, contenderAccount.address],
+    args: [currentAuctionRound, bob.address],
   });
   console.log(`Transfer EL controller transaction hash: ${transferELC}`);
-  console.log(`The new EL controller should now be ${contenderAccount.address}`);
+
+  // Wait a few seconds
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+  await sendTransactionToTriggerNewBlock();
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+
+  console.log(`Fetch the latest SetExpressLaneController log...`);
+  const newLogs = await client.getLogs({
+    address: auctionContract,
+    event: auctionContractAbi.filter((abiEntry) => abiEntry.name === 'SetExpressLaneController')[0],
+    fromBlock,
+  });
+  const newExpressLaneController2 = newLogs[newLogs.length - 1].args.newExpressLaneController;
+  console.log(`New express lane controller: ${newExpressLaneController2}`);
+  if (bob.address === newExpressLaneController2) {
+    console.log(
+      `The express lane controller was successfully transferred to ${newExpressLaneController2}`,
+    );
+  } else {
+    console.log(
+      `The express lane controller was not transferred. The controller is ${newExpressLaneController2}`,
+    );
+  }
 
   // Try to send a new transaction through the express lane (it should fail)
   logTitle('Sending a new express lane transaction as the previous EL controller (it should fail)');
-  await sendExpressLaneTransaction(account, account, currentAuctionRound, 2);
+  await sendExpressLaneTransaction(alice, alice, currentAuctionRound, 2);
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -497,7 +502,7 @@ const main = async () => {
 
   // Sending a new transaction as the new address
   logTitle('Sending a new express lane transaction as the new address (it should work)');
-  await sendExpressLaneTransaction(contenderAccount, contenderAccount, currentAuctionRound, 2);
+  await sendExpressLaneTransaction(bob, bob, currentAuctionRound, 2);
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -506,7 +511,7 @@ const main = async () => {
 
   // Sending a new transaction as the new address
   logTitle('Sending a new express lane transaction signed by a different user');
-  await sendExpressLaneTransaction(contenderAccount, account, currentAuctionRound, 3);
+  await sendExpressLaneTransaction(bob, alice, currentAuctionRound, 3);
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);

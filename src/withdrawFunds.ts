@@ -60,7 +60,7 @@ const main = async () => {
     args: [account.address],
   });
   console.log(`Current balance of ${account.address} in auction contract: ${depositedBalance}`);
-  
+
   if (depositedBalance <= 0n) {
     console.log(`Deposit balance is 0. No funds to withdraw.`);
     return;
