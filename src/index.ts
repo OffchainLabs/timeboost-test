@@ -412,16 +412,21 @@ const main = async () => {
   await sendTransactionToTriggerNewBlock();
 
   // Wait a few extra seconds for processing
-  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+  await sleep(2000 * secondsToWaitInBetweenELTransactions);
 
   // Look for the latest SetExpressLaneController log
   logTitle('Getting the auction winner');
+  const currentBlock = await client.getBlockNumber();
   console.log(`Fetch the latest SetExpressLaneController log...`);
   const logs = await client.getLogs({
     address: auctionContract,
     event: auctionContractAbi.filter((abiEntry) => abiEntry.name === 'SetExpressLaneController')[0],
     fromBlock,
   });
+
+  if (logs.length === 0) {
+    throw new Error(`No SetExpressLaneController logs found. Searched from block ${fromBlock} to ${currentBlock}`);
+  }
 
   // Verify whether we are the current express lane controller
   console.log('');
