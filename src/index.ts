@@ -412,7 +412,8 @@ const main = async () => {
   await sendTransactionToTriggerNewBlock();
 
   // Wait a few extra seconds for processing
-  await sleep(2000 * secondsToWaitInBetweenELTransactions);
+  // The auctioneer actually resolves the auction 2 seconds after the auction closing time, so sleep for 3 seconds.
+  await sleep(3000 * secondsToWaitInBetweenELTransactions);
 
   // Look for the latest SetExpressLaneController log
   logTitle('Getting the auction winner');
