@@ -2,7 +2,6 @@ import {
   Address,
   concat,
   createWalletClient,
-  defineChain,
   http,
   keccak256,
   numberToBytes,
@@ -16,6 +15,7 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { auctionContractAbi } from './auctionContractAbi';
 import dotenv from 'dotenv';
+import { getLocalNodeChainInformation, logTitle, sleep, waitUntilSecondsInMinute } from './helpers';
 dotenv.config();
 
 // env variables check
@@ -40,63 +40,26 @@ const auctionContract = process.env.TB_AUCTION_CONTRACT_ADDRESS as Address;
 const alice = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
 const bob = privateKeyToAccount(process.env.CONTENDER_PRIVATE_KEY as `0x${string}`);
 const networkId = Number(process.env.CHAIN_ID);
-const roundAuctionStartsAtSecondsInMinute = Number(process.env.AUCTION_STARTS_AT_SECONDS_IN_MINUTE);
-const roundAuctionEndsAtSecondsInMinute = Number(process.env.AUCTION_ENDS_AT_SECONDS_IN_MINUTE);
-const bidAmount = 20n;
-const contenderBidAmount = 10n;
-const bypassSendTransactionToTriggerNewBlock = false;
-const secondsToWaitInBetweenELTransactions = 2;
-
-// Helpers
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const waitUntilSecondsInMinute = (seconds: number) =>
-  new Promise(async (resolve) => {
-    let currentSeconds = Math.floor((Date.now() / 1000) % 60);
-    while (currentSeconds !== seconds) {
-      await sleep(500);
-      currentSeconds = Math.floor((Date.now() / 1000) % 60);
-    }
-
-    resolve(true);
-  });
-
-const logTitle = (text: string) => {
-  console.log('');
-  console.log('**************************');
-  console.log(text);
-  console.log('**************************');
-};
-
-const getLocalNodeChainInformation = () => {
-  return defineChain({
-    id: networkId,
-    name: 'Orbit chain',
-    network: 'orbit-chain',
-    nativeCurrency: {
-      name: 'ETH',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-    rpcUrls: {
-      default: {
-        http: [process.env.RPC!],
-      },
-      public: {
-        http: [process.env.RPC!],
-      },
-    },
-  });
-};
+// Adding some leeway (5 seconds) to the auction starting and end time
+const roundAuctionStartsAtSecondsInMinute =
+  Number(process.env.AUCTION_STARTS_AT_SECONDS_IN_MINUTE) + 5;
+const roundAuctionEndsAtSecondsInMinute = Number(process.env.AUCTION_ENDS_AT_SECONDS_IN_MINUTE) + 5;
+const bidAmount = BigInt(process.env.BID_AMOUNT_WEI ?? 20);
+const contenderBidAmount = BigInt(process.env.CONTENDER_BID_AMOUNT_WEI ?? 10);
+const sendTransactionToTriggerNewBlocks =
+  process.env.SEND_TRANSACTION_TO_TRIGGER_NEW_BLOCKS ?? false;
+const secondsToWaitInBetweenELTransactions =
+  Number(process.env.SECONDS_TO_WAIT_BETWEEN_EL_TRANSACTIONS) ?? 2;
 
 // Instantiating client
 const client = createWalletClient({
-  chain: getLocalNodeChainInformation(),
+  chain: getLocalNodeChainInformation(networkId, process.env.RPC!),
   transport: http(process.env.RPC!),
 }).extend(publicActions);
 
-// Temporary function until resolving some bugs
+// Temporary function until some bugs are resolved
 const sendTransactionToTriggerNewBlock = async (verbose = false) => {
-  if (bypassSendTransactionToTriggerNewBlock) {
+  if (!sendTransactionToTriggerNewBlocks) {
     if (verbose) {
       console.log(`Bypassing sending a new transaction to trigger a new block`);
     }
@@ -116,7 +79,7 @@ const sendTransactionToTriggerNewBlock = async (verbose = false) => {
   }
 };
 
-// Checks deposted funds in the auction contract and deposits more funds if needed
+// Checks deposited funds in the auction contract and deposits more funds if needed
 const checkDepositedFundsInAuctionContract = async (
   biddingTokenContract: Address,
   account: PrivateKeyAccount,
@@ -242,7 +205,7 @@ const sendBid = async (
 
     if (res.status != 200) {
       console.error(
-        `Error while calling the bid validator at ${process.env.TB_BID_VALIDATOR}: status is ${res.status}`,
+        `Error while calling the bid validator at ${process.env.TB_BID_VALIDATOR_ENDPOINT}: status is ${res.status}`,
       );
       return;
     }
@@ -250,7 +213,7 @@ const sendBid = async (
     const data = await res.json();
     if ('error' in data) {
       console.error(
-        `Error while calling the bid validator at ${process.env.TB_BID_VALIDATOR}: ${data.error.message}`,
+        `Error while calling the bid validator at ${process.env.TB_BID_VALIDATOR_ENDPOINT}: ${data.error.message}`,
       );
       return;
     }
@@ -439,9 +402,13 @@ const main = async () => {
   console.log('Waiting for the round to start...');
   await waitUntilSecondsInMinute(roundAuctionStartsAtSecondsInMinute);
 
+  // Keeping track of the sequencer number
+  let sequenceNumber = 0;
+
   // Sending a transaction through the express lane
   logTitle('Sending a express lane transaction');
-  await sendExpressLaneTransaction(alice, alice, currentAuctionRound, 0);
+  await sendExpressLaneTransaction(alice, alice, currentAuctionRound, sequenceNumber);
+  sequenceNumber++;
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -450,7 +417,8 @@ const main = async () => {
 
   // Sending a transaction through the express lane
   logTitle('Sending a express lane transaction signed by a different account');
-  await sendExpressLaneTransaction(alice, bob, currentAuctionRound, 1);
+  await sendExpressLaneTransaction(alice, bob, currentAuctionRound, sequenceNumber);
+  sequenceNumber++;
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -491,9 +459,12 @@ const main = async () => {
     );
   }
 
+  // Reset the sequence number
+  sequenceNumber = 0;
+
   // Try to send a new transaction through the express lane (it should fail)
   logTitle('Sending a new express lane transaction as the previous EL controller (it should fail)');
-  await sendExpressLaneTransaction(alice, alice, currentAuctionRound, 2);
+  await sendExpressLaneTransaction(alice, alice, currentAuctionRound, sequenceNumber);
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -502,7 +473,8 @@ const main = async () => {
 
   // Sending a new transaction as the new address
   logTitle('Sending a new express lane transaction as the new address (it should work)');
-  await sendExpressLaneTransaction(bob, bob, currentAuctionRound, 2);
+  await sendExpressLaneTransaction(bob, bob, currentAuctionRound, sequenceNumber);
+  sequenceNumber++;
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -511,7 +483,8 @@ const main = async () => {
 
   // Sending a new transaction as the new address
   logTitle('Sending a new express lane transaction signed by a different user');
-  await sendExpressLaneTransaction(bob, alice, currentAuctionRound, 3);
+  await sendExpressLaneTransaction(bob, alice, currentAuctionRound, sequenceNumber);
+  sequenceNumber++;
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
