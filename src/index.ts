@@ -389,7 +389,9 @@ const main = async () => {
   });
 
   if (logs.length === 0) {
-    throw new Error(`No SetExpressLaneController logs found. Searched from block ${fromBlock} to ${currentBlock}`);
+    throw new Error(
+      `No SetExpressLaneController logs found. Searched from block ${fromBlock} to ${currentBlock}`,
+    );
   }
 
   // Verify whether we are the current express lane controller
