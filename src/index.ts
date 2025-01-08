@@ -50,6 +50,8 @@ const sendTransactionToTriggerNewBlocks =
   process.env.SEND_TRANSACTION_TO_TRIGGER_NEW_BLOCKS ?? false;
 const secondsToWaitInBetweenELTransactions =
   Number(process.env.SECONDS_TO_WAIT_BETWEEN_EL_TRANSACTIONS) ?? 2;
+const destinationAccountOfELTransactions = '0x0000000000000000000000000000000000000001';
+const weiToSendOnELTransactions = 1n;
 
 // Instantiating client
 const client = createWalletClient({
@@ -239,8 +241,8 @@ const sendExpressLaneTransaction = async (
   const hexChainId: `0x${string}` = `0x${chainId.toString(16)}`;
   const transaction = await client.prepareTransactionRequest({
     account: transactionSigner.address,
-    to: '0x0000000000000000000000000000000000000001',
-    value: 1n,
+    to: destinationAccountOfELTransactions,
+    value: weiToSendOnELTransactions,
     type: 'legacy',
   });
   const serializedTransaction = await transactionSigner.signTransaction(transaction);
@@ -413,6 +415,12 @@ const main = async () => {
   // Keeping track of the sequencer number
   let sequenceNumber = 0;
 
+  // Getting initial balance of the account that receives test funds to verify
+  // that all EL transactions were executed successfully
+  const initialBalance = await client.getBalance({
+    address: destinationAccountOfELTransactions,
+  });
+
   // Sending a transaction through the express lane
   logTitle('Sending a express lane transaction');
   await sendExpressLaneTransaction(alice, alice, currentAuctionRound, sequenceNumber);
@@ -498,6 +506,19 @@ const main = async () => {
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
   await sendTransactionToTriggerNewBlock();
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
+
+  // Check final balance of testing account
+  const finalBalance = await client.getBalance({
+    address: destinationAccountOfELTransactions,
+  });
+  const expectedBalance = initialBalance + 4n * weiToSendOnELTransactions;
+  if (expectedBalance !== finalBalance) {
+    console.error(
+      `Final balance is not expected: Final balance is ${finalBalance}, but expected was ${expectedBalance}`,
+    );
+  } else {
+    console.log(`Final balance ${finalBalance} matches the expected value.`);
+  }
 };
 
 // Main call
