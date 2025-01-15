@@ -7,7 +7,7 @@ import {
   zeroAddress,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { auctionContractAbi } from './auctionContractAbi';
+import { auctionContractAbi } from '../src/auctionContractAbi';
 import dotenv from 'dotenv';
 dotenv.config();
 
