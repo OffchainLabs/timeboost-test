@@ -252,6 +252,7 @@ const main = async () => {
     args: [currentAuctionRound, bob.address],
   });
   console.log(`Transfer EL controller transaction hash: ${transferELC}`);
+  await client.waitForTransactionReceipt({ hash: transferELC })
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);

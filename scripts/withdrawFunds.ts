@@ -50,6 +50,7 @@ const main = async () => {
     value: 1n,
   });
   // console.log(`Transaction sent: ${hash}`);
+  await client.waitForTransactionReceipt({ hash: hash })
 
   // Get funds deposited
   console.log(`Checking deposited funds by ${account.address}`);
@@ -77,6 +78,7 @@ const main = async () => {
     functionName: 'initiateWithdrawal',
   });
   console.log(`Initiate withdrawal transaction sent: ${initWithdrawalTransaction}`);
+  await client.waitForTransactionReceipt({ hash: initWithdrawalTransaction })
 
   // Wait a few extra seconds for processing
   await sleep(1000 * 5);
@@ -123,6 +125,7 @@ const main = async () => {
     functionName: 'finalizeWithdrawal',
   });
   console.log(`Finalize withdrawal transaction sent: ${finalizeWithdrawalTransaction}`);
+  await client.waitForTransactionReceipt({ hash: finalizeWithdrawalTransaction })
 
   // Wait a few extra seconds for processing
   await sleep(1000 * 5);
