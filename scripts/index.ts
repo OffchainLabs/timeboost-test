@@ -207,6 +207,7 @@ const main = async () => {
   const initialBalance = await client.getBalance({
     address: destinationAccountOfELTransactions,
   });
+  let elTransactionsSent = 0;
 
   // Sending a transaction through the express lane
   logTitle('Sending a express lane transaction');
@@ -219,6 +220,7 @@ const main = async () => {
     auctionContract,
   });
   sequenceNumber++;
+  elTransactionsSent++;
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -236,12 +238,17 @@ const main = async () => {
     auctionContract,
   });
   sequenceNumber++;
+  elTransactionsSent++;
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
   await sendTransactionToTriggerNewBlock(client, alice);
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
 
+  // Iin the initial release of Timeboost, transferring of express lane control via the either
+  // the setTransferor or the transferExpressLaneController will not be supported by the Arbitrum
+  // Nitro node software.
+  /*
   // Transfer rights to a different account
   logTitle('Transferring rights to a different account');
   const transferELC = await client.writeContract({
@@ -307,6 +314,7 @@ const main = async () => {
     auctionContract,
   });
   sequenceNumber++;
+  elTransactionsSent++;
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
@@ -324,17 +332,19 @@ const main = async () => {
     auctionContract,
   });
   sequenceNumber++;
+  elTransactionsSent++;
 
   // Wait a few seconds
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
   await sendTransactionToTriggerNewBlock(client, alice);
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
+  */
 
   // Check final balance of testing account
   const finalBalance = await client.getBalance({
     address: destinationAccountOfELTransactions,
   });
-  const expectedBalance = initialBalance + 4n * weiToSendOnELTransactions;
+  const expectedBalance = initialBalance + BigInt(elTransactionsSent) * weiToSendOnELTransactions;
   if (expectedBalance !== finalBalance) {
     console.error(
       `Final balance is not expected: Final balance is ${finalBalance}, but expected was ${expectedBalance}`,

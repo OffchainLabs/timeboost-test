@@ -116,5 +116,5 @@ export const sendTransactionToTriggerNewBlock = async (
   if (verbose) {
     console.log(`Transaction sent: ${hash}`);
   }
-  await client.waitForTransactionReceipt({ hash: hash })
+  await client.waitForTransactionReceipt({ hash: hash });
 };

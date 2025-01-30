@@ -106,7 +106,7 @@ export const checkDepositedFundsInAuctionContract = async ({
       chain: client.chain!,
     });
     console.log(`Approve transaction sent: ${approveHash}`);
-    await client.waitForTransactionReceipt({ hash: approveHash })
+    await client.waitForTransactionReceipt({ hash: approveHash });
 
     // Making the deposit
     const depositHash = await client.writeContract({
@@ -118,7 +118,7 @@ export const checkDepositedFundsInAuctionContract = async ({
       chain: client.chain!,
     });
     console.log(`Deposit transaction sent: ${depositHash}`);
-    await client.waitForTransactionReceipt({ hash: depositHash })
+    await client.waitForTransactionReceipt({ hash: depositHash });
   }
 };
 
