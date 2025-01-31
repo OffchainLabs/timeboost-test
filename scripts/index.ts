@@ -62,7 +62,7 @@ const client = createWalletClient({
 const main = async () => {
   // Trigger one transaction to update latest block
   // (needed to get the right round information when no blocks are being created)
-  await sendTransactionToTriggerNewBlock(client, alice);
+  await sendTransactionToTriggerNewBlock(client, bob);
 
   // Read info from the auction contract
   logTitle('Get information from the Auction contract');
@@ -151,7 +151,7 @@ const main = async () => {
   await waitUntilSecondsInMinute(roundAuctionEndsAtSecondsInMinute);
 
   // Send another transaction to trigger the auctioneer sending the resolveAuction transaction to the contract
-  await sendTransactionToTriggerNewBlock(client, alice);
+  await sendTransactionToTriggerNewBlock(client, bob);
 
   // Wait a few extra seconds for processing
   // The auctioneer actually resolves the auction 2 seconds after the auction closing time, so sleep for 3 seconds.
