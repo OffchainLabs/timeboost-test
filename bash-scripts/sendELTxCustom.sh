@@ -28,12 +28,10 @@ prefix=$(cast keccak "TIMEBOOST_BID")
 hexedSequenceNumber=$(cast to-hex $sequenceNumber | cut -c 3-)
 paddedSequenceNumber=$(printf 0x%16s $hexedSequenceNumber | tr ' ' 0)
 
-echo "naani"
 echo $nonce
 
 # Serialize transaction
 if [ -n "$nonce" ]; then
-    echo "whaaatt"
     echo $nonce
     transaction=$(cast mktx -r $RPC --private-key $PRIVATE_KEY 0x0000000000000000000000000000000000000001 --value 1 --nonce $nonce)
 else
