@@ -50,6 +50,7 @@ const secondsToWaitInBetweenELTransactions =
   Number(process.env.SECONDS_TO_WAIT_BETWEEN_EL_TRANSACTIONS) ?? 2;
 const onlyBiddingMode =
   process.env.ONLY_BIDDING_MODE && process.env.ONLY_BIDDING_MODE === 'true' ? true : false;
+const bidWithContender = process.env.BID_WITH_CONTENDER && process.env.BID_WITH_CONTENDER === 'true' ? true : false;
 const destinationAccountOfELTransactions = '0x0000000000000000000000000000000000000001';
 const weiToSendOnELTransactions = 1n;
 
@@ -96,13 +97,15 @@ const main = async () => {
     client,
     auctionContract,
   });
-  await checkDepositedFundsInAuctionContract({
-    biddingTokenContract,
-    account: bob,
-    bidAmount: contenderBidAmount,
-    client,
-    auctionContract,
-  });
+  if (bidWithContender) {
+    await checkDepositedFundsInAuctionContract({
+      biddingTokenContract,
+      account: bob,
+      bidAmount: contenderBidAmount,
+      client,
+      auctionContract,
+    });
+  }
 
   // Read current round
   logTitle('Getting information about the current auction round');
@@ -133,14 +136,16 @@ const main = async () => {
     auctionContract,
     bidValidatorEndpoint: process.env.TB_BID_VALIDATOR_ENDPOINT!,
   });
-  await sendBid({
-    account: bob,
-    currentAuctionRound,
-    bidAmount: contenderBidAmount,
-    client,
-    auctionContract,
-    bidValidatorEndpoint: process.env.TB_BID_VALIDATOR_ENDPOINT!,
-  });
+  if (bidWithContender) {
+    await sendBid({
+      account: bob,
+      currentAuctionRound,
+      bidAmount: contenderBidAmount,
+      client,
+      auctionContract,
+      bidValidatorEndpoint: process.env.TB_BID_VALIDATOR_ENDPOINT!,
+    });
+  }
 
   // Get current block for the log query search later
   const fromBlock = await client.getBlockNumber();
