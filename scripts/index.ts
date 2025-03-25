@@ -50,7 +50,8 @@ const secondsToWaitInBetweenELTransactions =
   Number(process.env.SECONDS_TO_WAIT_BETWEEN_EL_TRANSACTIONS) ?? 2;
 const onlyBiddingMode =
   process.env.ONLY_BIDDING_MODE && process.env.ONLY_BIDDING_MODE === 'true' ? true : false;
-const bidWithContender = process.env.BID_WITH_CONTENDER && process.env.BID_WITH_CONTENDER === 'true' ? true : false;
+const bidWithContender =
+  process.env.BID_WITH_CONTENDER && process.env.BID_WITH_CONTENDER === 'true' ? true : false;
 const destinationAccountOfELTransactions = '0x0000000000000000000000000000000000000001';
 const weiToSendOnELTransactions = 1n;
 
@@ -160,7 +161,7 @@ const main = async () => {
 
   // Wait a few extra seconds for processing
   // The auctioneer actually resolves the auction 2 seconds after the auction closing time, so sleep for 3 seconds.
-  await sleep(3000 * secondsToWaitInBetweenELTransactions);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
 
   // Look for the latest SetExpressLaneController log
   logTitle('Getting the auction winner');

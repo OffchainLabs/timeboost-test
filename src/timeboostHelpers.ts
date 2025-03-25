@@ -8,6 +8,7 @@ import {
   PrivateKeyAccount,
   PublicClient,
   toHex,
+  TransactionRequestLegacy,
 } from 'viem';
 import { auctionContractAbi } from './auctionContractAbi';
 import { waitUntilMilliSecondsInMinute, WalletClientWithPublicActions } from './helpers';
@@ -36,6 +37,16 @@ export type SendExpressLaneTransactionParameters = {
   currentRound: bigint;
   sequenceNumber: number;
   client: WalletClientWithPublicActions;
+  auctionContract: Address;
+};
+
+export type PrepareExpressLaneTransactionPayloadParameters = {
+  ELController: PrivateKeyAccount;
+  transactionSigner: PrivateKeyAccount;
+  transaction: TransactionRequestLegacy;
+  client: WalletClientWithPublicActions;
+  currentRound: bigint;
+  sequenceNumber: number;
   auctionContract: Address;
 };
 
@@ -302,4 +313,51 @@ export const sendExpressLaneTransaction = async ({
     console.error(err);
     return;
   }
+};
+
+export const prepareExpressLaneTransactionPayload = async ({
+  ELController,
+  transactionSigner,
+  transaction,
+  client,
+  currentRound,
+  sequenceNumber,
+  auctionContract,
+}: PrepareExpressLaneTransactionPayloadParameters) => {
+  const chainId = Number(client.chain!.id);
+  const hexChainId: `0x${string}` = `0x${chainId.toString(16)}`;
+  const serializedTransaction = await transactionSigner.signTransaction(transaction);
+
+  const signatureData = concat([
+    keccak256(toHex('TIMEBOOST_BID')),
+    pad(hexChainId),
+    auctionContract,
+    toHex(numberToBytes(currentRound, { size: 8 })),
+    toHex(numberToBytes(sequenceNumber, { size: 8 })),
+    serializedTransaction,
+  ]);
+  const signature = await ELController.signMessage({
+    message: { raw: signatureData },
+  });
+
+  return {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: `express-lane-tx`,
+      method: 'timeboost_sendExpressLaneTransaction',
+      params: [
+        {
+          chainId: hexChainId,
+          round: `0x${currentRound.toString(16)}`,
+          auctionContractAddress: auctionContract,
+          sequenceNumber: `0x${sequenceNumber.toString(16)}`,
+          transaction: serializedTransaction,
+          options: {},
+          signature: signature,
+        },
+      ],
+    }),
+  };
 };
