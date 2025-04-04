@@ -127,6 +127,17 @@ const main = async () => {
     currentAuctionRound += 1n;
   }
 
+  // Bidding an insufficient amount
+  logTitle('Sending the wrong bid to the Auction contract (should fail)');
+  await sendBid({
+    account: alice,
+    currentAuctionRound,
+    bidAmount: reservePrice - 1n,
+    client,
+    auctionContract,
+    bidValidatorEndpoint: process.env.TB_BID_VALIDATOR_ENDPOINT!,
+  });
+
   // Bidding with main account
   logTitle('Sending bids to the Auction contract');
   await sendBid({
@@ -251,7 +262,23 @@ const main = async () => {
   await sendTransactionToTriggerNewBlock(client, alice);
   await sleep(1000 * secondsToWaitInBetweenELTransactions);
 
-  // Iin the initial release of Timeboost, transferring of express lane control via the either
+  // Try to send a transaction through the express lane as a non-EL controller (it should fail)
+  logTitle('Sending a express lane transaction as a non-EL controller (it should fail)');
+  await sendExpressLaneTransaction({
+    ELController: bob,
+    transactionSigner: bob,
+    currentRound: currentAuctionRound,
+    sequenceNumber,
+    client,
+    auctionContract,
+  });
+
+  // Wait a few seconds
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+  await sendTransactionToTriggerNewBlock(client, alice);
+  await sleep(1000 * secondsToWaitInBetweenELTransactions);
+
+  // In the initial release of Timeboost, transferring of express lane control via the either
   // the setTransferor or the transferExpressLaneController will not be supported by the Arbitrum
   // Nitro node software.
   /*
